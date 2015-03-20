@@ -58,7 +58,7 @@ class Point():
 
 
 class Dungeon():
-    def __init__(self, width, height, density=.20, rooms=[], doors=[], mobs=[]):
+    def __init__(self, width, height, density=.25, rooms=[], doors=[], mobs=[]):
         self.width = width
         self.height = height
         self.density = density
@@ -74,7 +74,6 @@ class Dungeon():
 
     def __repr__(self):
         # prettifies the print a bit
-        # todo remove enumerates once debugged
         return '\n'.join([''.join(['{:2}'.format(item) for x, item in enumerate(row)]) for y, row in enumerate(self.tiles)])
 
     def load_configuration(config):
@@ -85,7 +84,6 @@ class Dungeon():
         self.tiles = [[WallTile() for i in range(self.width)] for j in range(self.height)]
         self.entrance = None
         self.exit = None
-        self.keys = {}
 
     def generate(self):
         self.clear()
@@ -204,8 +202,25 @@ class Dungeon():
             while door in connect_to:
                 connect_to = set(random.sample(self.doors, random.randint(MIN_PATHS_PER_DOOR, MAX_PATHS_PER_DOOR)))
             for connection in connect_to:
-                #choose the spot opposite the room to start the door
-                self.connect_path(self.tiles, door.x, door.y, connection.x, connection.y)
+                #choose the spot opposite the room to start the door and connection
+                door_x, door_y = self._get_opposite_of_room(door)
+                connection_x, connection_y = self._get_opposite_of_room(connection)
+                self.connect_path(self.tiles, door_x, door_y, connection_x, connection_y)
+
+    def _get_opposite_of_room(self, door):
+        if door.x <= 0 or door.y <= 0 or door.x >= self.width or door.y >= self.height:
+            #best to just start where we're at
+            return door.x, door.y
+
+        if self.is_tile(door.y+1, door.x, FloorTile):
+            return door.x, door.y-1
+        if self.is_tile(door.y, door.x+1, FloorTile):
+            return door.x-1, door.y
+        if self.is_tile(door.y-1, door.x, FloorTile):
+            return door.x, door.y+1
+        if self.is_tile(door.y, door.x-1, FloorTile):
+            return door.x+1, door.y
+
 
     def connect_path(self, tiles, currx, curry, goalx, goaly):
         if currx == goalx and curry == goaly:
@@ -217,23 +232,20 @@ class Dungeon():
         # look for padding on the sides so that we dont make hallways right against the side of our rooms
 
         movex = random.choice([True, False])
+
+        if self.is_wall(curry, currx):
+            tiles[curry][currx] = FloorTile()
         if movex:
-            if self.is_wall(curry, currx) and \
-                    (self.is_wall(curry-1, currx) or self.is_tile(curry-1, currx, DoorTile)) and \
-                    (self.is_wall(curry+1, currx) or self.is_tile(curry+1, currx, DoorTile)):
+            if self.is_wall(curry, currx):
                 tiles[curry][currx] = FloorTile()
             if currx < goalx:
                 self.connect_path(tiles, currx+1, curry, goalx, goaly)
-            else:
+            elif currx > goalx:
                 self.connect_path(tiles, currx-1, curry, goalx, goaly)
         else:
-            if self.is_wall(curry, currx) and \
-                    (self.is_wall(curry, currx-1) or self.is_tile(curry, currx-1, DoorTile)) and \
-                    (self.is_wall(curry, currx+1) or self.is_tile(curry, currx+1, DoorTile)):
-                tiles[curry][currx] = FloorTile()
             if curry < goaly:
                 self.connect_path(tiles, currx, curry+1, goalx, goaly)
-            else:
+            elif curry > goaly:
                 self.connect_path(tiles, currx, curry-1, goalx, goaly)
 
         return tiles
