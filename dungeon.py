@@ -41,16 +41,6 @@ class Room():
         self.x2 = bottomright.x
         self.y2 = bottomright.y
 
-    def _range_overlap(self, a_min, a_max, b_min, b_max):
-        '''Neither range is completely greater than the other
-        '''
-        return (a_min <= b_max) and (b_min <= a_max)
-
-    def intersects(self, room):
-        '''Overlapping rectangles overlap both horizontally & vertically
-        '''
-        return self._range_overlap(self.x1, self.x2, room.x1, room.x2) and self._range_overlap(self.y1, self.y2, room.y1, room.y2)
-
 
 class Point():
     def __init__(self, x, y):
@@ -68,7 +58,7 @@ class Point():
 
 
 class Dungeon():
-    def __init__(self, width, height, density=.10, rooms=[], doors=[], mobs=[]):
+    def __init__(self, width, height, density=.20, rooms=[], doors=[], mobs=[]):
         self.width = width
         self.height = height
         self.density = density
