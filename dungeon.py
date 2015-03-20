@@ -229,12 +229,10 @@ class Dungeon():
         if currx >= self.width or curry >= self.height or currx < 0 or curry < 0:
             return tiles
 
-        # look for padding on the sides so that we dont make hallways right against the side of our rooms
-
-        movex = random.choice([True, False])
-
         if self.is_wall(curry, currx):
             tiles[curry][currx] = FloorTile()
+            
+        movex = random.choice([True, False])
         if movex:
             if self.is_wall(curry, currx):
                 tiles[curry][currx] = FloorTile()
