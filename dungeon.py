@@ -221,6 +221,9 @@ class Dungeon():
         if self.is_tile(door.y, door.x-1, FloorTile):
             return door.x+1, door.y
 
+        # fell through
+        return door.x, door.y
+
 
     def connect_path(self, tiles, currx, curry, goalx, goaly):
         if currx == goalx and curry == goaly:
@@ -231,7 +234,7 @@ class Dungeon():
 
         if self.is_wall(curry, currx):
             tiles[curry][currx] = FloorTile()
-            
+
         movex = random.choice([True, False])
         if movex:
             if self.is_wall(curry, currx):
